@@ -1,0 +1,54 @@
+---
+# This playbook brings up the AWX Host VM along with the test Linux and Windows VMs 
+# running on KVM on the localhost. It then prints the AWX URL with the AWX Host IP.
+- name: To bring up KVM VMs on localhost supporting AWX playground
+  hosts: localhost
+  become: yes
+  vars:
+    awx_host_vm: ubuntu18.04_Ansible_AWX
+    linux_host_vms:
+    - ""
+    windows_host_vms:
+    - "win2k16"
+  tasks:
+  - name: Install Python3-pip if needed
+    yum:
+      name: 
+        - "python3-pip"
+      state: latest
+
+  - name: Install Python modules required by virt-net module
+    pip:
+      name: 
+        - "libvirt-python"
+        - "lxml"
+      executable: "/usr/bin/pip3"
+      state: present
+
+  - name: Bring up Guest VMs for ansible AWX Testing
+    virt:
+      name: "{{ item }}"
+      state: running
+    with_items:
+      - "{{ awx_host_vm }}"
+      - "{{ linux_host_vms }}"
+      - "{{ windows_host_vms }}"
+    when: item is defined and item != ''
+    
+  - name: Check AWX Host VM Details
+    virt_net:
+      #name: "{{ awx_host_vm }}"
+      command: info
+    register: awx_host_vm_details
+
+  - name: "Print IP Addresses"
+    debug:
+      #var: awx_host_vm_details
+      #msg: "{{ item.index }}. Host Name: {{ item.value[item.index].hostname }}, IP Address: {{ item.value[item.index].ipaddr }}"
+      msg: "Host Name: {{ item.hostname }}, IP Addess: {{ item.ipaddr }}"
+    loop: "{{ awx_host_vm_details.networks.default.dhcp_leases }}"
+
+  # - name: Print Var
+  #   debug:
+  #     var: awx_host_vm_details.networks.default.dhcp_leases
+    
