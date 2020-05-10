@@ -1,0 +1,26 @@
+---
+# This playbook shuts down the AWX Host VM along with the test Linux and Windows VMs 
+# running on KVM on the localhost. 
+
+# Run with --ask-become-pass
+# Usage: 
+#      ansible-playbook -i inventory/hosts awx_shutdown.yml --ask-become-pass
+- name: To shutdown KVM VMs on localhost supporting AWX playground
+  hosts: localhost
+  become: yes
+  vars:
+    awx_host_vm: ubuntu18.04_Ansible_AWX
+    linux_host_vms:
+    - "centos8"
+    windows_host_vms:
+    - "win2k16"
+  tasks:
+  - name: Shutdown Guest VMs for ansible AWX Testing
+    virt:
+      name: "{{ item }}"
+      state: shutdown
+    with_items:
+      - "{{ awx_host_vm }}"
+      - "{{ linux_host_vms }}"
+      - "{{ windows_host_vms }}"
+    when: item is defined and item != ''
