@@ -1,6 +1,10 @@
 ---
 # This playbook brings up the AWX Host VM along with the test Linux and Windows VMs 
 # running on KVM on the localhost. It then prints the AWX URL with the AWX Host IP.
+
+# Run with --ask-become-pass
+# Usage: 
+#      ansible-playbook -i inventory/hosts awx_startup.yml --ask-become-pass
 - name: To bring up KVM VMs on localhost supporting AWX playground
   hosts: localhost
   become: yes
@@ -43,12 +47,10 @@
 
   - name: "Print IP Addresses"
     debug:
-      #var: awx_host_vm_details
-      #msg: "{{ item.index }}. Host Name: {{ item.value[item.index].hostname }}, IP Address: {{ item.value[item.index].ipaddr }}"
       msg: "Host Name: {{ item.hostname }}, IP Addess: {{ item.ipaddr }}"
     loop: "{{ awx_host_vm_details.networks.default.dhcp_leases }}"
 
-  # - name: Print Var
-  #   debug:
-  #     var: awx_host_vm_details.networks.default.dhcp_leases
+  
+  
+
     
